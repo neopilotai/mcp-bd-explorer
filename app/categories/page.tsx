@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Globe, TrendingUp } from "lucide-react"
+import { Globe, TrendingUp, AlertCircle, RefreshCw } from "lucide-react"
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/client"
 import type { Category } from "@/lib/types"
@@ -13,6 +13,8 @@ export default function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([])
   const [domainCounts, setDomainCounts] = useState<{ [key: string]: number }>({})
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [retrying, setRetrying] = useState(false)
 
   const supabase = createClient()
 
@@ -20,11 +22,12 @@ export default function CategoriesPage() {
     fetchCategoriesAndCounts()
   }, [])
 
-  const fetchCategoriesAndCounts = async () => {
+  const fetchCategoriesAndCounts = async (isRetry = false) => {
     try {
-      setLoading(true)
+      if (isRetry) setRetrying(true)
+      else setLoading(true)
+      setError(null)
 
-      // Fetch categories
       const { data: categoriesData, error: categoriesError } = await supabase
         .from("categories")
         .select("*")
@@ -32,12 +35,10 @@ export default function CategoriesPage() {
 
       if (categoriesError) throw categoriesError
 
-      // Fetch domain counts by category
       const { data: domainsData, error: domainsError } = await supabase.from("domains").select("category")
 
       if (domainsError) throw domainsError
 
-      // Count domains by category
       const counts: { [key: string]: number } = {}
       domainsData?.forEach((domain) => {
         if (domain.category) {
@@ -48,9 +49,11 @@ export default function CategoriesPage() {
       setCategories(categoriesData || [])
       setDomainCounts(counts)
     } catch (error) {
-      console.error("Error fetching categories:", error)
+      console.error("[v0] Error fetching categories:", error)
+      setError(error instanceof Error ? error.message : "Failed to load categories")
     } finally {
-      setLoading(false)
+      if (isRetry) setRetrying(false)
+      else setLoading(false)
     }
   }
 
@@ -75,7 +78,6 @@ export default function CategoriesPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Navigation */}
       <nav className="border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
@@ -104,7 +106,6 @@ export default function CategoriesPage() {
       </nav>
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-foreground mb-4">Website Categories</h1>
           <p className="text-muted-foreground text-lg">
@@ -112,7 +113,28 @@ export default function CategoriesPage() {
           </p>
         </div>
 
-        {/* Categories Grid */}
+        {error && (
+          <Card className="mb-8 bg-red-500/10 border-red-500/20">
+            <CardContent className="p-4 flex items-start space-x-3">
+              <AlertCircle className="h-5 w-5 text-red-400 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <h3 className="text-sm font-semibold text-red-400">Error loading categories</h3>
+                <p className="text-sm text-red-300 mt-1">{error}</p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => fetchCategoriesAndCounts(true)}
+                  className="mt-3"
+                  disabled={retrying}
+                >
+                  <RefreshCw className={`h-4 w-4 mr-2 ${retrying ? "animate-spin" : ""}`} />
+                  {retrying ? "Retrying..." : "Try Again"}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {[...Array(8)].map((_, i) => (
@@ -164,7 +186,6 @@ export default function CategoriesPage() {
           </div>
         )}
 
-        {/* Statistics */}
         <div className="mt-12 bg-card/30 rounded-lg p-6">
           <h2 className="text-xl font-semibold text-foreground mb-4">Category Statistics</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -180,7 +201,9 @@ export default function CategoriesPage() {
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-primary">
-                {Math.round(Object.values(domainCounts).reduce((sum, count) => sum + count, 0) / categories.length)}
+                {categories.length > 0
+                  ? Math.round(Object.values(domainCounts).reduce((sum, count) => sum + count, 0) / categories.length)
+                  : 0}
               </div>
               <div className="text-sm text-muted-foreground">Avg per Category</div>
             </div>

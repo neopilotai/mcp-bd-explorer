@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Search, Globe, ExternalLink, Clock, Shield, Filter, SortAsc } from "lucide-react"
+import { Search, Globe, ExternalLink, Clock, Shield, Filter, SortAsc, AlertCircle } from 'lucide-react'
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/client"
 import type { Domain } from "@/lib/types"
@@ -16,9 +16,11 @@ export default function SearchPage() {
   const [domains, setDomains] = useState<Domain[]>([])
   const [filteredDomains, setFilteredDomains] = useState<Domain[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [selectedCategory, setSelectedCategory] = useState<string>("all")
   const [sortBy, setSortBy] = useState<string>("created_at")
   const [statusFilter, setStatusFilter] = useState<string>("all")
+  const [retrying, setRetrying] = useState(false)
 
   const supabase = createClient()
 
@@ -30,21 +32,26 @@ export default function SearchPage() {
     filterAndSortDomains()
   }, [domains, searchQuery, selectedCategory, sortBy, statusFilter])
 
-  const fetchDomains = async () => {
+  const fetchDomains = async (isRetry = false) => {
     try {
-      setLoading(true)
-      const { data, error } = await supabase
+      if (isRetry) setRetrying(true)
+      else setLoading(true)
+      setError(null)
+
+      const { data, error: queryError } = await supabase
         .from("domains")
         .select("*")
         .order("created_at", { ascending: false })
         .limit(100)
 
-      if (error) throw error
+      if (queryError) throw queryError
       setDomains(data || [])
     } catch (error) {
-      console.error("Error fetching domains:", error)
+      console.error("[v0] Error fetching domains:", error)
+      setError(error instanceof Error ? error.message : "Failed to load domains")
     } finally {
-      setLoading(false)
+      if (isRetry) setRetrying(false)
+      else setLoading(false)
     }
   }
 
@@ -58,7 +65,7 @@ export default function SearchPage() {
           domain.domain.toLowerCase().includes(searchQuery.toLowerCase()) ||
           domain.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
           domain.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          domain.tags?.some((tag) => tag.toLowerCase().includes(searchQuery.toLowerCase())),
+          domain.tags?.some((tag) => tag.toLowerCase().includes(searchQuery.toLowerCase()))
       )
     }
 
@@ -155,9 +162,7 @@ export default function SearchPage() {
         {/* Search Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-foreground mb-4">Search Bangladeshi Websites</h1>
-          <p className="text-muted-foreground text-lg">
-            Discover and explore domains across Bangladesh's digital landscape
-          </p>
+          <p className="text-muted-foreground text-lg">Discover and explore domains across Bangladesh's digital landscape</p>
         </div>
 
         {/* Search and Filters */}
@@ -238,6 +243,21 @@ export default function SearchPage() {
             </p>
           </div>
 
+          {error && (
+            <Card className="bg-red-500/10 border-red-500/20">
+              <CardContent className="p-4 flex items-start space-x-3">
+                <AlertCircle className="h-5 w-5 text-red-400 flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <h3 className="text-sm font-semibold text-red-400">Error loading domains</h3>
+                  <p className="text-sm text-red-300 mt-1">{error}</p>
+                  <Button variant="outline" size="sm" onClick={() => fetchDomains(true)} className="mt-3" disabled={retrying}>
+                    {retrying ? "Retrying..." : "Try Again"}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Domain Cards */}
           {loading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -279,7 +299,9 @@ export default function SearchPage() {
                         <CardDescription className="text-primary font-mono text-sm">{domain.domain}</CardDescription>
                       </div>
                       <div className="flex items-center space-x-2 ml-2">
-                        {domain.ssl_enabled && <Shield className="h-4 w-4 text-green-400" title="SSL Enabled" />}
+                        {(domain.has_ssl || domain.ssl_enabled) && (
+                          <Shield className="h-4 w-4 text-green-400" title="SSL Enabled" />
+                        )}
                         <Button variant="ghost" size="sm" asChild>
                           <a href={`https://${domain.domain}`} target="_blank" rel="noopener noreferrer">
                             <ExternalLink className="h-4 w-4" />

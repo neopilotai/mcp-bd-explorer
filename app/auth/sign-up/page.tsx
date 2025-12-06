@@ -1,28 +1,27 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Globe, Eye, EyeOff, AlertCircle } from "lucide-react"
+import { Globe, Eye, EyeOff, AlertCircle, CheckCircle } from "lucide-react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
 
-export default function LoginPage() {
+export default function SignUpPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const [fieldErrors, setFieldErrors] = useState({ email: "", password: "" })
-  const router = useRouter()
+  const [fieldErrors, setFieldErrors] = useState({ email: "", password: "", confirmPassword: "" })
 
   const validateForm = () => {
-    const newErrors = { email: "", password: "" }
+    const newErrors = { email: "", password: "", confirmPassword: "" }
 
     if (!email) {
       newErrors.email = "Email is required"
@@ -36,11 +35,17 @@ export default function LoginPage() {
       newErrors.password = "Password must be at least 6 characters"
     }
 
+    if (!confirmPassword) {
+      newErrors.confirmPassword = "Please confirm your password"
+    } else if (password !== confirmPassword) {
+      newErrors.confirmPassword = "Passwords do not match"
+    }
+
     setFieldErrors(newErrors)
-    return newErrors.email === "" && newErrors.password === ""
+    return newErrors.email === "" && newErrors.password === "" && newErrors.confirmPassword === ""
   }
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
 
     if (!validateForm()) {
@@ -53,27 +58,54 @@ export default function LoginPage() {
     setError(null)
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          emailRedirectTo: process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL || `${window.location.origin}/admin`,
+        },
       })
+
       if (error) {
-        if (error.message === "Invalid login credentials") {
-          setError("Email or password is incorrect. Please try again.")
-        } else if (error.message === "Email not confirmed") {
-          setError("Please confirm your email before logging in.")
+        if (error.message.includes("already registered")) {
+          setError("This email is already registered. Please log in instead.")
         } else {
-          setError(error.message || "An error occurred during login")
+          setError(error.message || "An error occurred during sign up")
         }
         return
       }
-      router.push("/admin")
+
+      setSuccess(true)
     } catch (error: unknown) {
-      console.error("[v0] Login error:", error)
+      console.error("[v0] Sign up error:", error)
       setError(error instanceof Error ? error.message : "An unexpected error occurred")
     } finally {
       setIsLoading(false)
     }
+  }
+
+  if (success) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-6">
+        <div className="w-full max-w-md">
+          <Card className="bg-card/50 border-border/60">
+            <CardContent className="pt-6">
+              <div className="text-center space-y-4">
+                <CheckCircle className="h-12 w-12 text-green-400 mx-auto" />
+                <h2 className="text-xl font-semibold text-foreground">Check your email</h2>
+                <p className="text-muted-foreground">
+                  We've sent a confirmation link to <strong>{email}</strong>. Please check your inbox and click the link
+                  to activate your account.
+                </p>
+                <Button asChild className="mt-4">
+                  <Link href="/auth/login">Back to Login</Link>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -85,23 +117,23 @@ export default function LoginPage() {
               <Globe className="h-8 w-8 text-primary" />
               <span className="text-2xl font-bold text-foreground">MCP-BD Explorer</span>
             </Link>
-            <h1 className="text-2xl font-bold text-foreground">Admin Login</h1>
-            <p className="text-muted-foreground">Access the admin dashboard</p>
+            <h1 className="text-2xl font-bold text-foreground">Create Account</h1>
+            <p className="text-muted-foreground">Sign up to access admin features</p>
           </div>
 
           <Card className="bg-card/50 border-border/60">
             <CardHeader>
-              <CardTitle className="text-xl">Sign In</CardTitle>
-              <CardDescription>Enter your credentials to access the admin panel</CardDescription>
+              <CardTitle className="text-xl">Sign Up</CardTitle>
+              <CardDescription>Enter your details to create an account</CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleLogin} className="space-y-4">
+              <form onSubmit={handleSignUp} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
                   <Input
                     id="email"
                     type="email"
-                    placeholder="admin@example.com"
+                    placeholder="you@example.com"
                     required
                     value={email}
                     onChange={(e) => {
@@ -138,21 +170,36 @@ export default function LoginPage() {
                   </div>
                   {fieldErrors.password && <p className="text-xs text-red-400">{fieldErrors.password}</p>}
                 </div>
+                <div className="space-y-2">
+                  <Label htmlFor="confirmPassword">Confirm Password</Label>
+                  <Input
+                    id="confirmPassword"
+                    type={showPassword ? "text" : "password"}
+                    required
+                    value={confirmPassword}
+                    onChange={(e) => {
+                      setConfirmPassword(e.target.value)
+                      setFieldErrors({ ...fieldErrors, confirmPassword: "" })
+                    }}
+                    className={`bg-background/50 ${fieldErrors.confirmPassword ? "border-red-500" : ""}`}
+                  />
+                  {fieldErrors.confirmPassword && <p className="text-xs text-red-400">{fieldErrors.confirmPassword}</p>}
+                </div>
                 {error && (
                   <div className="p-3 rounded-md bg-red-500/10 border border-red-500/20 flex items-start space-x-2">
                     <AlertCircle className="h-4 w-4 text-red-400 flex-shrink-0 mt-0.5" />
                     <p className="text-sm text-red-400">{error}</p>
                   </div>
                 )}
-                <Button type="submit" className="w-full" disabled={isLoading || !email || !password}>
-                  {isLoading ? "Signing in..." : "Sign In"}
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading ? "Creating account..." : "Sign Up"}
                 </Button>
               </form>
               <div className="mt-6 text-center text-sm">
                 <p className="text-muted-foreground">
-                  Don't have an account?{" "}
-                  <Link href="/auth/sign-up" className="text-primary hover:underline">
-                    Sign up
+                  Already have an account?{" "}
+                  <Link href="/auth/login" className="text-primary hover:underline">
+                    Log in
                   </Link>
                 </p>
                 <Link href="/" className="text-muted-foreground hover:text-foreground transition-colors">

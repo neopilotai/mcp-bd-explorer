@@ -1,17 +1,31 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { createServerClient } from "@supabase/ssr"
 import { cookies } from "next/headers"
+import { validateEnvVariables, createErrorResponse } from "@/lib/utils/error-handler"
+import { logger } from "@/lib/utils/logger"
 
 export async function GET() {
   try {
-    const cookieStore = cookies()
-    const supabase = createServerClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_ANON_KEY!, {
-      cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value
+    if (!validateEnvVariables(["NEXT_PUBLIC_SUPABASE_URL", "SUPABASE_ANON_KEY"])) {
+      logger.error("Missing Supabase environment variables")
+      return NextResponse.json(
+        { error: "Server not properly configured" },
+        { status: 500 }
+      )
+    }
+
+    const cookieStore = await cookies()
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.SUPABASE_ANON_KEY,
+      {
+        cookies: {
+          get(name: string) {
+            return cookieStore.get(name)?.value
+          },
         },
-      },
-    })
+      }
+    )
 
     const { data: categories, error } = await supabase
       .from("categories")
@@ -22,8 +36,8 @@ export async function GET() {
       .order("name")
 
     if (error) {
-      console.error("Database error:", error)
-      return NextResponse.json({ error: "Database error" }, { status: 500 })
+      console.error("[v0] Database error:", error)
+      return NextResponse.json({ error: "Failed to fetch categories" }, { status: 500 })
     }
 
     // Transform the data to include domain counts
@@ -37,8 +51,8 @@ export async function GET() {
       categories: categoriesWithCounts,
     })
   } catch (error) {
-    console.error("Categories API error:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    const appError = createErrorResponse(error, "Failed to fetch categories", "GET /api/categories")
+    return NextResponse.json({ error: appError.message }, { status: appError.statusCode })
   }
 }
 
@@ -48,23 +62,36 @@ export async function POST(request: NextRequest) {
     const { name, description, color } = body
 
     if (!name) {
+      logger.warn("Category creation attempted without name")
       return NextResponse.json({ error: "Category name is required" }, { status: 400 })
     }
 
-    const cookieStore = cookies()
-    const supabase = createServerClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, {
-      cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value
+    if (!validateEnvVariables(["NEXT_PUBLIC_SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"])) {
+      logger.error("Missing Supabase service role key")
+      return NextResponse.json(
+        { error: "Server not properly configured" },
+        { status: 500 }
+      )
+    }
+
+    const cookieStore = await cookies()
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.SUPABASE_SERVICE_ROLE_KEY,
+      {
+        cookies: {
+          get(name: string) {
+            return cookieStore.get(name)?.value
+          },
         },
-      },
-    })
+      }
+    )
 
     const { data: newCategory, error } = await supabase
       .from("categories")
       .insert({
         name,
-        description,
+        description: description || null,
         color: color || "#3B82F6",
         created_at: new Date().toISOString(),
       })
@@ -72,8 +99,8 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (error) {
-      console.error("Database error:", error)
-      return NextResponse.json({ error: "Database error" }, { status: 500 })
+      console.error("[v0] Database error:", error)
+      return NextResponse.json({ error: "Failed to create category" }, { status: 500 })
     }
 
     return NextResponse.json(
@@ -81,10 +108,10 @@ export async function POST(request: NextRequest) {
         message: "Category created successfully",
         category: newCategory,
       },
-      { status: 201 },
+      { status: 201 }
     )
   } catch (error) {
-    console.error("Create category API error:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    const appError = createErrorResponse(error, "Failed to create category", "POST /api/categories")
+    return NextResponse.json({ error: appError.message }, { status: appError.statusCode })
   }
 }

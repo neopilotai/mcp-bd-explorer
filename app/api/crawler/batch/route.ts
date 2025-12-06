@@ -21,8 +21,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Maximum 50 domains per batch" }, { status: 400 })
     }
 
-    const cookieStore = cookies()
-    const supabase = createServerClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, {
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      console.error("[v0] Missing Supabase environment variables")
+      return NextResponse.json({ error: "Server configuration error" }, { status: 500 })
+    }
+
+    const cookieStore = await cookies()
+    const supabase = createServerClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, {
       cookies: {
         get(name: string) {
           return cookieStore.get(name)?.value
@@ -30,10 +35,9 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    const results = []
-    const errors = []
+    const results: Array<{ domain: string; success: boolean; result?: unknown }> = []
+    const errors: Array<{ domain: string; success: boolean; error?: string }> = []
 
-    // Process domains in parallel with concurrency limit
     const concurrencyLimit = 5
     const chunks = []
     for (let i = 0; i < domains.length; i += concurrencyLimit) {
@@ -43,7 +47,6 @@ export async function POST(request: NextRequest) {
     for (const chunk of chunks) {
       const chunkPromises = chunk.map(async (domain) => {
         try {
-          // Call the single crawl API
           const crawlResponse = await fetch(`${request.nextUrl.origin}/api/crawler/crawl`, {
             method: "POST",
             headers: {
@@ -54,7 +57,6 @@ export async function POST(request: NextRequest) {
 
           const crawlResult = await crawlResponse.json()
 
-          // If category is specified and domain was successfully crawled, update category
           if (category && crawlResult.domain && !crawlResult.error) {
             await supabase.from("domains").update({ category }).eq("domain", crawlResult.domain.domain)
           }
@@ -83,11 +85,12 @@ export async function POST(request: NextRequest) {
         }
       })
 
-      // Small delay between chunks to avoid overwhelming the server
       if (chunks.indexOf(chunk) < chunks.length - 1) {
         await new Promise((resolve) => setTimeout(resolve, 1000))
       }
     }
+
+    console.log("[v0] Batch crawl completed:", { successful: results.length, failed: errors.length })
 
     return NextResponse.json({
       message: `Batch crawl completed. ${results.length} successful, ${errors.length} failed.`,
@@ -100,7 +103,7 @@ export async function POST(request: NextRequest) {
       },
     })
   } catch (error) {
-    console.error("Batch crawl API error:", error)
+    console.error("[v0] Batch crawl API error:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }

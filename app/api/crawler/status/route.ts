@@ -4,8 +4,13 @@ import { cookies } from "next/headers"
 
 export async function GET(request: NextRequest) {
   try {
-    const cookieStore = cookies()
-    const supabase = createServerClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, {
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      console.error("[v0] Missing Supabase environment variables")
+      return NextResponse.json({ error: "Server configuration error" }, { status: 500 })
+    }
+
+    const cookieStore = await cookies()
+    const supabase = createServerClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, {
       cookies: {
         get(name: string) {
           return cookieStore.get(name)?.value
@@ -13,17 +18,14 @@ export async function GET(request: NextRequest) {
       },
     })
 
-    // Get recent crawl statistics
     const { data: recentCrawls } = await supabase
       .from("crawl_logs")
       .select("*")
-      .gte("crawled_at", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
-      .order("crawled_at", { ascending: false })
+      .gte("crawl_date", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+      .order("crawl_date", { ascending: false })
 
-    // Get domain statistics
     const { data: domainStats } = await supabase.from("domains").select("status, category")
 
-    // Calculate statistics
     const totalDomains = domainStats?.length || 0
     const activeDomains = domainStats?.filter((d) => d.status === "active").length || 0
     const inactiveDomains = domainStats?.filter((d) => d.status === "inactive").length || 0
@@ -39,7 +41,7 @@ export async function GET(request: NextRequest) {
       ) || {}
 
     const recentCrawlsCount = recentCrawls?.length || 0
-    const successfulCrawls = recentCrawls?.filter((c) => c.status_code >= 200 && c.status_code < 300).length || 0
+    const successfulCrawls = recentCrawls?.filter((c) => c.response_code >= 200 && c.response_code < 300).length || 0
     const failedCrawls = recentCrawlsCount - successfulCrawls
 
     const averageResponseTime = recentCrawls?.length
@@ -61,7 +63,7 @@ export async function GET(request: NextRequest) {
       recent_crawls: recentCrawls?.slice(0, 10) || [],
     })
   } catch (error) {
-    console.error("Crawler status API error:", error)
+    console.error("[v0] Crawler status API error:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }
