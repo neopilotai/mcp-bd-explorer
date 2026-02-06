@@ -1,0 +1,203 @@
+{
+  "settings": {
+    "number_of_shards": 5,
+    "number_of_replicas": 1,
+    "index.refresh_interval": "30s",
+    "index.codec": "best_compression",
+    "index.store.type": "niofs",
+    "analysis": {
+      "analyzer": {
+        "domain_analyzer": {
+          "type": "custom",
+          "tokenizer": "standard",
+          "filter": ["lowercase", "stop", "snowball"]
+        },
+        "edge_ngram_analyzer": {
+          "type": "custom",
+          "tokenizer": "edge_ngram_tokenizer",
+          "filter": ["lowercase"]
+        }
+      },
+      "tokenizer": {
+        "edge_ngram_tokenizer": {
+          "type": "edge_ngram",
+          "min_gram": 2,
+          "max_gram": 10,
+          "token_chars": ["letter", "digit"]
+        }
+      }
+    }
+  },
+  "mappings": {
+    "properties": {
+      "domain_id": {
+        "type": "keyword",
+        "store": true
+      },
+      "domain_name": {
+        "type": "text",
+        "analyzer": "domain_analyzer",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          },
+          "raw": {
+            "type": "keyword"
+          },
+          "suggest": {
+            "type": "completion",
+            "analyzer": "simple"
+          }
+        }
+      },
+      "tld": {
+        "type": "keyword"
+      },
+      "description": {
+        "type": "text",
+        "analyzer": "standard"
+      },
+      "category": {
+        "type": "keyword",
+        "eager_global_ordinals": true
+      },
+      "country_code": {
+        "type": "keyword"
+      },
+      "subdomain_count": {
+        "type": "integer"
+      },
+      "technology_count": {
+        "type": "integer"
+      },
+      "quality_score": {
+        "type": "float"
+      },
+      "content_quality": {
+        "type": "float"
+      },
+      "technical_quality": {
+        "type": "float"
+      },
+      "crawl_status": {
+        "type": "keyword"
+      },
+      "is_active": {
+        "type": "boolean"
+      },
+      "is_parked": {
+        "type": "boolean"
+      },
+      "last_crawled": {
+        "type": "date"
+      },
+      "registration_date": {
+        "type": "date"
+      },
+      "expiration_date": {
+        "type": "date"
+      },
+      "host_info": {
+        "type": "nested",
+        "properties": {
+          "ip_address": {
+            "type": "ip"
+          },
+          "country_code": {
+            "type": "keyword"
+          },
+          "city": {
+            "type": "keyword"
+          },
+          "hosting_provider": {
+            "type": "keyword"
+          },
+          "server_software": {
+            "type": "keyword"
+          },
+          "avg_response_time_ms": {
+            "type": "integer"
+          }
+        }
+      },
+      "registrant_info": {
+        "type": "nested",
+        "properties": {
+          "name": {
+            "type": "text"
+          },
+          "organization": {
+            "type": "keyword"
+          },
+          "country_code": {
+            "type": "keyword"
+          },
+          "is_private": {
+            "type": "boolean"
+          }
+        }
+      },
+      "technologies": {
+        "type": "nested",
+        "properties": {
+          "tech_id": {
+            "type": "keyword"
+          },
+          "name": {
+            "type": "keyword"
+          },
+          "category": {
+            "type": "keyword"
+          },
+          "type": {
+            "type": "keyword"
+          },
+          "confidence_score": {
+            "type": "float"
+          },
+          "version": {
+            "type": "keyword"
+          }
+        }
+      },
+      "metrics": {
+        "type": "nested",
+        "properties": {
+          "metric_date": {
+            "type": "date"
+          },
+          "estimated_visits": {
+            "type": "long"
+          },
+          "bounce_rate": {
+            "type": "float"
+          },
+          "backlink_count": {
+            "type": "long"
+          },
+          "referring_domains": {
+            "type": "long"
+          },
+          "uptime_percent": {
+            "type": "float"
+          }
+        }
+      },
+      "keywords": {
+        "type": "keyword",
+        "eager_global_ordinals": true
+      },
+      "tags": {
+        "type": "keyword",
+        "eager_global_ordinals": true
+      },
+      "created_at": {
+        "type": "date"
+      },
+      "updated_at": {
+        "type": "date"
+      }
+    }
+  }
+}
