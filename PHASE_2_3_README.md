@@ -249,19 +249,6 @@ CONCURRENT_PER_DOMAIN = 1
 ```
 
 ### Feature Flags
-```python
-# Enable JavaScript rendering (slower, use for JS-heavy sites)
-ENABLE_JAVASCRIPT_RENDERING = false
-
-# Enable image extraction
-EXTRACT_IMAGES = true
-
-# Enable backlink analysis
-EXTRACT_BACKLINKS = true
-
-# Enable traffic estimation
-EXTRACT_TRAFFIC = true
-```
 
 ---
 
