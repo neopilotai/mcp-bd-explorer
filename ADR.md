@@ -49,7 +49,7 @@ Use **Python with FastAPI** as the backend framework instead of expanding Node.j
 
 **Rationale**:
 - FastAPI provides native async/await (20k+ req/s)
-- Pydantic gives compile-time type checking
+- Pydantic gives runtime data validation with type safety
 - Excellent data science ecosystem (pandas, numpy)
 - Automatic OpenAPI/Swagger documentation
 - Simpler deployment and scaling
