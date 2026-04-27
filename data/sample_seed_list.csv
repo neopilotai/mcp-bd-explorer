@@ -1,0 +1,67 @@
+domain,tld_type,category,priority,source,status,validation_score,added_date,notes
+www.gov.bd,bd,government,critical,gov_registry,active,0.98,2026-02-06,Main government portal
+bangladesh.gov.bd,bd,government,critical,gov_registry,active,0.98,2026-02-06,Official Bangladesh portal
+mofa.gov.bd,bd,government,critical,gov_registry,active,0.98,2026-02-06,Ministry of Foreign Affairs
+mof.gov.bd,bd,government,critical,gov_registry,active,0.98,2026-02-06,Ministry of Finance
+moe.gov.bd,bd,government,high,gov_registry,active,0.97,2026-02-06,Ministry of Education
+health.gov.bd,bd,government,high,gov_registry,active,0.97,2026-02-06,Ministry of Health
+police.gov.bd,bd,government,high,gov_registry,active,0.96,2026-02-06,Police Bureau
+bbs.org.bd,org.bd,government,high,gov_registry,active,0.97,2026-02-06,Bangladesh Bureau of Statistics
+bb.org.bd,org.bd,finance,critical,gov_registry,active,0.98,2026-02-06,Bangladesh Bank (Central Bank)
+bb-payment.com.bd,com.bd,finance,high,gov_registry,active,0.97,2026-02-06,BB Payment System
+du.ac.bd,ac.bd,education,critical,gov_registry,active,0.98,2026-02-06,University of Dhaka
+buet.ac.bd,ac.bd,education,critical,gov_registry,active,0.98,2026-02-06,Bangladesh University of Engineering and Technology
+bracu.ac.bd,ac.bd,education,high,gov_registry,active,0.97,2026-02-06,Brac University
+diu.edu.bd,edu.bd,education,high,gov_registry,active,0.97,2026-02-06,Daffodil International University
+aiub.edu.bd,edu.bd,education,high,gov_registry,active,0.97,2026-02-06,American International University-Bangladesh
+ub.edu.bd,edu.bd,education,high,gov_registry,active,0.96,2026-02-06,University of Barisal
+ru.ac.bd,ac.bd,education,high,gov_registry,active,0.96,2026-02-06,Rajshahi University
+ju.edu.bd,edu.bd,education,medium,gov_registry,active,0.95,2026-02-06,Jahangirnagar University
+ku.ac.bd,ac.bd,education,medium,gov_registry,active,0.95,2026-02-06,Khulna University
+daraz.com.bd,com.bd,commerce,critical,popular_sites,active,0.99,2026-02-06,Major e-commerce platform
+robi.com.bd,com.bd,telecom,critical,popular_sites,active,0.98,2026-02-06,Robi Axiata Limited - Telecom
+grameenphone.com.bd,com.bd,telecom,critical,popular_sites,active,0.99,2026-02-06,Grameenphone Limited - Major telecom provider
+banglalink.com.bd,com.bd,telecom,critical,popular_sites,active,0.98,2026-02-06,Banglalink - Mobile operator
+teletalk.com.bd,com.bd,telecom,high,popular_sites,active,0.97,2026-02-06,Teletalk Bangladesh Limited
+batl.com.bd,com.bd,telecom,high,popular_sites,active,0.96,2026-02-06,Bangladesh Army Telecom
+ashkona.com.bd,com.bd,commerce,high,popular_sites,active,0.95,2026-02-06,Ashkona Online Shopping
+bdshop.com.bd,com.bd,commerce,medium,popular_sites,pending,0.85,2026-02-06,Bangladesh Shopping Portal
+bikroy.com.bd,com.bd,commerce,medium,popular_sites,active,0.92,2026-02-06,Online Classified Ads
+olx.com.bd,com.bd,commerce,high,popular_sites,active,0.97,2026-02-06,OLX Bangladesh - Classifieds
+ajkerdeal.com.bd,com.bd,commerce,medium,popular_sites,active,0.90,2026-02-06,Daily Deals
+dhaka.com.bd,com.bd,general,medium,popular_sites,active,0.88,2026-02-06,Dhaka Information Portal
+prothomalo.com,com,media,high,popular_sites,active,0.96,2026-02-06,Prothom Alo - Daily newspaper
+bdnews24.com,com,media,high,popular_sites,active,0.97,2026-02-06,BD News 24 - Online news
+theindependentbd.com,com,media,high,popular_sites,active,0.95,2026-02-06,The Independent - Daily
+risingbd.com,com,media,medium,popular_sites,active,0.92,2026-02-06,Rising BD - News portal
+somoybd.com,com,media,medium,popular_sites,active,0.91,2026-02-06,Somoy News - News portal
+bonikbarta.net,net,media,medium,popular_sites,active,0.90,2026-02-06,Bonik Barta - Business news
+samakal.com,com,media,medium,popular_sites,active,0.89,2026-02-06,Samakal - Daily newspaper
+barta24.com,com,media,medium,popular_sites,active,0.88,2026-02-06,Barta 24 - News portal
+google.com.bd,com.bd,technology,high,popular_sites,active,0.99,2026-02-06,Google Bangladesh
+facebook.com,com,technology,high,popular_sites,active,0.99,2026-02-06,Facebook Bangladesh users
+youtube.com.bd,com.bd,technology,high,popular_sites,pending,0.85,2026-02-06,YouTube Bangladesh
+wikipedia.org.bd,org.bd,technology,medium,popular_sites,pending,0.70,2026-02-06,Wikipedia Bangladesh
+github.com,com,technology,high,popular_sites,active,0.98,2026-02-06,GitHub - Code repository
+stackoverflow.com,com,technology,high,popular_sites,active,0.98,2026-02-06,Stack Overflow - Q&A
+hostbdweb.com.bd,com.bd,technology,medium,popular_sites,active,0.85,2026-02-06,Web hosting provider
+bdjobs.com,com,commerce,high,popular_sites,active,0.96,2026-02-06,BDJobs - Job portal
+bikashbd.com,com,commerce,medium,popular_sites,active,0.88,2026-02-06,Bikash BD - Mobile payment
+ngo.gov.bd,gov.bd,ngo,high,gov_registry,active,0.97,2026-02-06,NGO Bureau Registry
+brac.net.bd,net.bd,ngo,critical,gov_registry,active,0.98,2026-02-06,BRAC - Bangladesh NGO
+gkbd.org.bd,org.bd,ngo,medium,gov_registry,active,0.90,2026-02-06,Gonoshasthya Kendra
+savethechildren.org.bd,org.bd,ngo,high,gov_registry,active,0.95,2026-02-06,Save the Children Bangladesh
+actionaid.org.bd,org.bd,ngo,high,gov_registry,active,0.96,2026-02-06,Action Aid Bangladesh
+oxfam.org.bd,org.bd,ngo,high,gov_registry,active,0.95,2026-02-06,Oxfam in Bangladesh
+unicef.org.bd,org.bd,ngo,high,gov_registry,active,0.97,2026-02-06,UNICEF Bangladesh
+unhealth.org.bd,org.bd,healthcare,high,gov_registry,active,0.96,2026-02-06,UN Health Coordination
+dmvs.info.bd,info.bd,healthcare,medium,popular_sites,active,0.85,2026-02-06,Disease Management Info
+sos-health.org.bd,org.bd,healthcare,medium,gov_registry,active,0.88,2026-02-06,SOS Health Services
+apollo.com.bd,com.bd,healthcare,high,popular_sites,active,0.94,2026-02-06,Apollo Hospitals Bangladesh
+squarehospital.com.bd,com.bd,healthcare,high,popular_sites,active,0.92,2026-02-06,Square Hospital
+islamibank.com.bd,com.bd,finance,high,popular_sites,active,0.97,2026-02-06,Islami Bank Bangladesh
+dutchbanglabankbd.com,com,finance,high,popular_sites,active,0.96,2026-02-06,Dutch-Bangla Bank
+eblbank.com,com,finance,high,popular_sites,active,0.96,2026-02-06,Eastern Bank Limited
+sebl.com.bd,com.bd,finance,high,popular_sites,active,0.95,2026-02-06,Southeast Bank Limited
+hsbc.com.bd,com.bd,finance,high,popular_sites,active,0.98,2026-02-06,HSBC Bangladesh
+scbbd.com,com,finance,high,popular_sites,active,0.98,2026-02-06,Standard Chartered Bangladesh
