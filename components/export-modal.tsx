@@ -6,10 +6,15 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Download, Check } from 'lucide-react';
 
+interface ExportFilters {
+  category: string;
+  [key: string]: unknown;
+}
+
 interface ExportModalProps {
   onClose: () => void;
   query: string;
-  filters: any;
+  filters: ExportFilters;
 }
 
 export default function ExportModal({ onClose, query, filters }: ExportModalProps) {
