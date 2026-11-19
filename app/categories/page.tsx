@@ -16,8 +16,6 @@ export default function CategoriesPage() {
   const [error, setError] = useState<string | null>(null)
   const [retrying, setRetrying] = useState(false)
 
-  const supabase = createClient()
-
   useEffect(() => {
     fetchCategoriesAndCounts()
   }, [])
@@ -28,6 +26,7 @@ export default function CategoriesPage() {
       else setLoading(true)
       setError(null)
 
+      const supabase = createClient()
       const { data: categoriesData, error: categoriesError } = await supabase
         .from("categories")
         .select("*")
