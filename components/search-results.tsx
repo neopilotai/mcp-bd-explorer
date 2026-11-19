@@ -95,7 +95,7 @@ export default function SearchResults({ query, filters }: SearchResultsProps) {
       ) : (
         <div className="space-y-3">
           {results.map((result) => (
-            <Link key={result.id} href={`/domain/${result.id}`}>
+            <Link key={result.id} href={`/domain/${result.domain}`}>
               <Card className="cursor-pointer border-border/60 bg-card hover:shadow-md hover:border-border transition-all duration-200">
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between gap-4">
