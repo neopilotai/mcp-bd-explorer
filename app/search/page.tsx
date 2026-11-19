@@ -22,8 +22,6 @@ export default function SearchPage() {
   const [statusFilter, setStatusFilter] = useState<string>("all")
   const [retrying, setRetrying] = useState(false)
 
-  const supabase = createClient()
-
   useEffect(() => {
     fetchDomains()
   }, [])
@@ -38,6 +36,7 @@ export default function SearchPage() {
       else setLoading(true)
       setError(null)
 
+      const supabase = createClient()
       const { data, error: queryError } = await supabase
         .from("domains")
         .select("*")

@@ -34,8 +34,6 @@ export default function DomainDetailPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const supabase = createClient()
-
   useEffect(() => {
     if (domainName) {
       fetchDomainDetails()
@@ -46,6 +44,8 @@ export default function DomainDetailPage() {
     try {
       setLoading(true)
       setError(null)
+
+      const supabase = createClient()
 
       // Fetch domain details
       const { data: domainData, error: domainError } = await supabase

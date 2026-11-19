@@ -63,49 +63,57 @@ export default function AdminDashboard() {
   const [newCategory, setNewCategory] = useState({ name: "", description: "", color: "#3B82F6" })
   const router = useRouter()
 
-  const supabase = createClient()
-
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const {
-          data: { user },
-          error,
-        } = await supabase.auth.getUser()
-        if (error) throw error
+    let unsubscribe: (() => void) | undefined
 
-        if (!user) {
+    try {
+      const supabase = createClient()
+      const checkAuth = async () => {
+        try {
+          const {
+            data: { user },
+            error,
+          } = await supabase.auth.getUser()
+          if (error) throw error
+
+          if (!user) {
+            router.push("/auth/login")
+            return
+          }
+
+          setUser(user)
+          setAuthLoading(false)
+          fetchData()
+        } catch (error) {
+          console.error("[v0] Auth error:", error)
           router.push("/auth/login")
-          return
         }
-
-        setUser(user)
-        setAuthLoading(false)
-        fetchData()
-      } catch (error) {
-        console.error("[v0] Auth error:", error)
-        router.push("/auth/login")
       }
+
+      void checkAuth()
+
+      const {
+        data: { subscription },
+      } = supabase.auth.onAuthStateChange((event, session) => {
+        if (event === "SIGNED_OUT" || !session) {
+          router.push("/auth/login")
+        } else if (session?.user) {
+          setUser(session.user)
+          setAuthLoading(false)
+        }
+      })
+      unsubscribe = () => subscription.unsubscribe()
+    } catch (error) {
+      console.error("[v0] Supabase setup error:", error)
+      router.push("/auth/login")
     }
 
-    checkAuth()
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "SIGNED_OUT" || !session) {
-        router.push("/auth/login")
-      } else if (session?.user) {
-        setUser(session.user)
-        setAuthLoading(false)
-      }
-    })
-
-    return () => subscription.unsubscribe()
-  }, [router, supabase.auth])
+    return () => unsubscribe?.()
+  }, [router])
 
   const fetchData = async () => {
     try {
+      const supabase = createClient()
       setLoading(true)
       setError(null)
 
@@ -242,6 +250,7 @@ export default function AdminDashboard() {
 
     try {
       setError(null)
+      const supabase = createClient()
       const { error: deleteError } = await supabase.from("domains").delete().eq("id", id)
 
       if (deleteError) throw deleteError
@@ -277,6 +286,7 @@ export default function AdminDashboard() {
 
   const handleLogout = async () => {
     try {
+      const supabase = createClient()
       await supabase.auth.signOut()
       router.push("/auth/login")
     } catch (error) {
